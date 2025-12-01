@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Game PGN</title>
+  </head>
+  <body>
+    <pre id="pgn"></pre>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const gameId = params.get('gameId');
+      async function load() {
+        if (!gameId) return;
+        const res = await fetch(`/game/${encodeURIComponent(gameId)}/pgn`);
+        const text = await res.text();
+        document.getElementById('pgn').textContent = text || 'No PGN available yet.';
+      }
+      load();
+    </script>
+  </body>
+</html>
+
+

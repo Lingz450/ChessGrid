@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChessGrid - Play Chess</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .container {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 28px 32px 36px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+        max-width: 960px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      h1 {
+        font-size: 1.9rem;
+        color: #111827;
+      }
+
+      .tagline {
+        color: #6b7280;
+        font-size: 0.95rem;
+      }
+
+      .status-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .status-text {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #111827;
+      }
+
+      .status-text span {
+        font-weight: 700;
+      }
+
+      .status-text.check {
+        color: #ea580c;
+      }
+
+      .status-text.finished {
+        color: #b91c1c;
+      }
+
+      .game-meta {
+        color: #6b7280;
+        font-size: 0.85rem;
+      }
+
+      .board-row {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .board-wrapper {
+        padding: 14px;
+        border-radius: 18px;
+        background: radial-gradient(circle at top, #f9fafb, #e5e7eb);
+        box-shadow: 0 22px 45px rgba(15, 23, 42, 0.4);
+      }
+
+      #chessBoard svg {
+        display: block;
+        border-radius: 12px;
+      }
+
+      .side-panel {
+        min-width: 220px;
+        max-width: 260px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .panel-card {
+        background: #f9fafb;
+        border-radius: 16px;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .panel-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+
+      .player-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+        color: #4b5563;
+      }
+
+      .player-row span.color {
+        font-weight: 600;
+      }
+
+      .moves {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 0.85rem;
+      }
+
+      .move-pill {
+        background: #e5e7eb;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', 'Courier New', monospace;
+      }
+
+      .captured-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #4b5563;
+        margin-bottom: 4px;
+      }
+
+      .captured-pieces {
+        font-size: 1.1rem;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 9px 16px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: #ffffff;
+        background: linear-gradient(135deg, #6366f1, #7c3aed);
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.45);
+        transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+      }
+
+      button.secondary {
+        background: #e5e7eb;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      button.danger {
+        background: #ef4444;
+        box-shadow: 0 10px 22px rgba(239, 68, 68, 0.4);
+      }
+
+      button:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        filter: brightness(1.03);
+      }
+
+      .message {
+        text-align: center;
+        min-height: 22px;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .message.error {
+        color: #b91c1c;
+      }
+
+      .message.success {
+        color: #15803d;
+      }
+
+      @media (max-width: 900px) {
+        .container {
+          padding: 20px;
+        }
+
+        .board-row {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .side-panel {
+          max-width: none;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>ChessGrid</h1>
+          <p class="tagline">Tap a piece, then a square to move</p>
+        </div>
+        <div class="controls">
+          <button id="newGameButton" class="secondary">New Game</button>
+          <button id="startSoloButton">Start Solo</button>
+        </div>
+      </header>
+
+      <section class="status-bar">
+        <div>
+          <div id="statusText" class="status-text">Loading game…</div>
+          <div id="gameMeta" class="game-meta"></div>
+        </div>
+      </section>
+
+      <section class="board-row">
+        <div class="board-wrapper">
+          <div id="chessBoard"></div>
+        </div>
+        <aside class="side-panel">
+          <div class="panel-card">
+            <div class="panel-title">Players</div>
+            <div class="player-row">
+              <span class="color">White</span>
+              <span id="whitePlayerName">Unassigned</span>
+            </div>
+            <div class="player-row">
+              <span class="color">Black</span>
+              <span id="blackPlayerName">Unassigned</span>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-title">Move History</div>
+            <div id="moveHistory" class="moves"></div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-title">Captured Pieces</div>
+            <div class="captured-row">
+              <span>White</span>
+              <span id="capturedWhite" class="captured-pieces">–</span>
+            </div>
+            <div class="captured-row">
+              <span>Black</span>
+              <span id="capturedBlack" class="captured-pieces">–</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <div id="message" class="message"></div>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const LOCAL_GAME_KEY = 'chessGameId';
+      const LOCAL_TOKEN_KEY_PREFIX = 'chessToken:';
+
+      const state = {
+        gameId: urlParams.get('gameId') || localStorage.getItem(LOCAL_GAME_KEY) || null,
+        token: null,
+        currentFen: null,
+        selectedSquare: null,
+        validMoves: [],
+        lastMove: null,
+        currentPlayer: 'w',
+        status: 'waiting',
+        pollTimer: null,
+      };
+
+      function getTokenStorageKey(gameId) {
+        return `${LOCAL_TOKEN_KEY_PREFIX}${gameId}`;
+      }
+
+      function showMessage(text, type) {
+        const el = document.getElementById('message');
+        el.textContent = text || '';
+        el.className = 'message';
+        if (text && type) {
+          el.classList.add(type);
+        }
+        if (!text) return;
+        setTimeout(() => {
+          el.textContent = '';
+          el.className = 'message';
+        }, 3500);
+      }
+
+      function parseFenBoard(fen) {
+        const [placement] = fen.split(' ');
+        const rows = placement.split('/');
+        const board = [];
+        for (const row of rows) {
+          const cols = [];
+          for (const ch of row) {
+            if (/\d/.test(ch)) {
+              const empty = parseInt(ch, 10);
+              for (let i = 0; i < empty; i += 1) {
+                cols.push(null);
+              }
+            } else {
+              const color = ch === ch.toUpperCase() ? 'w' : 'b';
+              const type = ch.toLowerCase();
+              cols.push({ color, type });
+            }
+          }
+          board.push(cols);
+        }
+        return board;
+      }
+
+      function renderBoard(fen) {
+        const boardEl = document.getElementById('chessBoard');
+        boardEl.innerHTML = '';
+        if (!fen) {
+          boardEl.textContent = 'Loading board…';
+          return;
+        }
+
+        const boardState = parseFenBoard(fen);
+        const squareSize = 72;
+        const boardSize = squareSize * 8;
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', boardSize);
+        svg.setAttribute('height', boardSize);
+        svg.style.borderRadius = '10px';
+
+        const pieceMap = {
+          P: '♙',
+          p: '♟',
+          R: '♖',
+          r: '♜',
+          N: '♘',
+          n: '♞',
+          B: '♗',
+          b: '♝',
+          Q: '♕',
+          q: '♛',
+          K: '♔',
+          k: '♚',
+        };
+
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            const x = col * squareSize;
+            const y = row * squareSize;
+            const fileChar = String.fromCharCode(97 + col);
+            const rankChar = 8 - row;
+            const square = `${fileChar}${rankChar}`;
+            const isLight = (row + col) % 2 === 0;
+
+            let fill = isLight ? '#f0d9b5' : '#b58863';
+            if (state.lastMove && (state.lastMove.from === square || state.lastMove.to === square)) {
+              fill = '#cdd26a';
+            }
+            if (state.selectedSquare === square) {
+              fill = '#facc15';
+            } else if (state.validMoves.includes(square)) {
+              fill = '#bbf7d0';
+            }
+
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', squareSize);
+            rect.setAttribute('height', squareSize);
+            rect.setAttribute('fill', fill);
+            rect.setAttribute('stroke', '#000');
+            rect.setAttribute('stroke-width', '0.5');
+            rect.style.cursor = 'pointer';
+            rect.addEventListener('click', () => handleSquareClick(square));
+            svg.appendChild(rect);
+
+            const piece = boardState[row][col];
+            if (piece) {
+              const key = piece.color === 'w' ? piece.type.toUpperCase() : piece.type;
+              const glyph = pieceMap[key];
+              if (glyph) {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x + squareSize / 2);
+                text.setAttribute('y', y + squareSize * 0.7);
+                text.setAttribute('font-size', '44');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', piece.color === 'w' ? '#ffffff' : '#000000');
+                text.setAttribute('stroke', piece.color === 'w' ? '#000000' : '#ffffff');
+                text.setAttribute('stroke-width', '0.8');
+                text.textContent = glyph;
+                text.style.pointerEvents = 'none';
+                svg.appendChild(text);
+              }
+            }
+
+            if (row === 7) {
+              const fileLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+              fileLabel.setAttribute('x', x + squareSize - 10);
+              fileLabel.setAttribute('y', y + squareSize - 8);
+              fileLabel.setAttribute('font-size', '11');
+              fileLabel.setAttribute('fill', 'rgba(0,0,0,0.65)');
+              fileLabel.textContent = fileChar;
+              fileLabel.style.pointerEvents = 'none';
+              svg.appendChild(fileLabel);
+            }
+            if (col === 0) {
+              const rankLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+              rankLabel.setAttribute('x', x + 6);
+              rankLabel.setAttribute('y', y + 14);
+              rankLabel.setAttribute('font-size', '11');
+              rankLabel.setAttribute('fill', 'rgba(0,0,0,0.65)');
+              rankLabel.textContent = rankChar;
+              rankLabel.style.pointerEvents = 'none';
+              svg.appendChild(rankLabel);
+            }
+          }
+        }
+
+        boardEl.appendChild(svg);
+      }
+
+      function updateStatus(game) {
+        const statusEl = document.getElementById('statusText');
+        const metaEl = document.getElementById('gameMeta');
+        statusEl.className = 'status-text';
+
+        metaEl.textContent = game.gameId ? `Game ID: ${game.gameId}` : '';
+
+        if (game.status === 'finished') {
+          if (game.isCheckmate) {
+            statusEl.textContent = 'Checkmate · Game finished';
+            statusEl.classList.add('finished');
+          } else if (game.isDraw) {
+            statusEl.textContent = 'Draw · Game finished';
+          } else {
+            statusEl.textContent = 'Game finished';
+          }
+          return;
+        }
+
+        if (game.status === 'waiting') {
+          statusEl.textContent = 'Waiting for game to start';
+          return;
+        }
+
+        const side = game.currentPlayer === 'w' ? 'White' : 'Black';
+        statusEl.textContent = `${side} to move`;
+        if (game.isCheck) {
+          statusEl.textContent += ' · Check';
+          statusEl.classList.add('check');
+        }
+      }
+
+      function updatePlayers(players = {}) {
+        const whiteName = players.white?.name || 'Unassigned';
+        const blackName = players.black?.name || 'Unassigned';
+        document.getElementById('whitePlayerName').textContent = whiteName;
+        document.getElementById('blackPlayerName').textContent = blackName;
+      }
+
+      function updateMoveHistory(moves) {
+        const historyEl = document.getElementById('moveHistory');
+        if (!moves || !moves.length) {
+          historyEl.innerHTML = '<span style="color:#9ca3af;">No moves yet</span>';
+          return;
+        }
+        historyEl.innerHTML = moves
+          .map((m, i) => `<span class="move-pill">${i + 1}. ${m}</span>`)
+          .join('');
+      }
+
+      function updateCaptured(captured = { white: [], black: [] }) {
+        const pieceMap = {
+          p: '♟',
+          r: '♜',
+          n: '♞',
+          b: '♝',
+          q: '♛',
+          k: '♚',
+        };
+        const whiteEl = document.getElementById('capturedWhite');
+        const blackEl = document.getElementById('capturedBlack');
+
+        const render = (arr) =>
+          arr
+            .map((code) => {
+              const glyph = pieceMap[code.toLowerCase()] || '';
+              return glyph ? `<span>${glyph}</span>` : '';
+            })
+            .join('');
+
+        whiteEl.innerHTML =
+          captured.white && captured.white.length ? render(captured.white) : '&ndash;';
+        blackEl.innerHTML =
+          captured.black && captured.black.length ? render(captured.black) : '&ndash;';
+      }
+
+      function isPlayersTurn() {
+        if (state.status !== 'active') return false;
+        if (!state.token) return true;
+        const isWhiteTurn = state.currentPlayer === 'w';
+        const color = isWhiteTurn ? 'white' : 'black';
+        const tokenKey = getTokenStorageKey(state.gameId);
+        const stored = localStorage.getItem(tokenKey);
+        if (!stored) return false;
+        const session = JSON.parse(stored);
+        return session.mode === 'solo' || session.color === color || session.color === 'both';
+      }
+
+      async function handleSquareClick(square) {
+        if (!state.currentFen) return;
+
+        if (state.status === 'finished') {
+          showMessage('Game finished. Start a new game to keep playing.', 'error');
+          return;
+        }
+
+        if (!isPlayersTurn()) {
+          showMessage('Not your turn in this game.', 'error');
+          return;
+        }
+
+        if (state.selectedSquare === square) {
+          state.selectedSquare = null;
+          state.validMoves = [];
+          renderBoard(state.currentFen);
+          return;
+        }
+
+        if (state.selectedSquare) {
+          const from = state.selectedSquare;
+          state.selectedSquare = null;
+          state.validMoves = [];
+          await makeMove(from, square);
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `/game/${encodeURIComponent(state.gameId)}/moves/${encodeURIComponent(square)}`,
+          );
+          if (!res.ok) {
+            throw new Error('Could not load moves');
+          }
+          const data = await res.json();
+          state.selectedSquare = square;
+          state.validMoves = data.validMoves || [];
+          renderBoard(state.currentFen);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function makeMove(from, to) {
+        try {
+          const payload = { gameId: state.gameId, from, to };
+          if (state.token) {
+            payload.playerToken = state.token;
+          }
+            const res = await fetch('/move', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+              const raw = data.error || 'Invalid move';
+              let message = raw;
+              const prefix = 'Invalid move:';
+              if (raw === 'Invalid move') {
+                message = 'That move is not legal in this position.';
+              } else if (raw.startsWith(prefix)) {
+                const jsonPart = raw.slice(prefix.length).trim();
+                try {
+                  const parsed = JSON.parse(jsonPart);
+                  if (parsed.from && parsed.to) {
+                    message = `Invalid move from ${parsed.from} to ${parsed.to}. Try a legal move for this piece.`;
+                  } else {
+                    message = 'That move is not legal in this position.';
+                  }
+                } catch {
+                  message = 'That move is not legal in this position.';
+                }
+              }
+              showMessage(message, 'error');
+              await loadGame();
+              return;
+            }
+          showMessage('Move played.', 'success');
+          await loadGame();
+        } catch (err) {
+          showMessage('Error making move: ' + err.message, 'error');
+        }
+      }
+
+      async function ensureGameExists() {
+        if (!state.gameId) {
+          const res = await fetch('/api/games', { method: 'POST' });
+          const data = await res.json();
+          if (data.success && data.gameId) {
+            state.gameId = data.gameId;
+            localStorage.setItem(LOCAL_GAME_KEY, state.gameId);
+            window.history.replaceState({}, '', `/play?gameId=${encodeURIComponent(state.gameId)}`);
+          }
+        }
+      }
+
+      async function loadGame() {
+        if (!state.gameId) return;
+
+        try {
+          const res = await fetch(`/game/${encodeURIComponent(state.gameId)}`);
+          if (!res.ok) {
+            throw new Error('Game not found');
+          }
+          const game = await res.json();
+
+          state.currentFen = game.fen;
+          state.currentPlayer = game.currentPlayer;
+          state.status = game.status;
+          state.lastMove = game.lastMove;
+
+          renderBoard(game.fen);
+          updateStatus(game);
+          updateMoveHistory(game.moveHistory || []);
+          updateCaptured(game.capturedPieces || {});
+          updatePlayers(game.players || {});
+        } catch (err) {
+          showMessage('Game not found. Creating a new one.', 'error');
+          state.gameId = null;
+          localStorage.removeItem(LOCAL_GAME_KEY);
+          await initGame();
+        }
+      }
+
+      async function startSolo() {
+        await ensureGameExists();
+        try {
+          const res = await fetch(`/api/games/${encodeURIComponent(state.gameId)}/solo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Solo Player' }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.error || 'Failed to start solo game');
+          }
+          state.token = data.token;
+          localStorage.setItem(
+            getTokenStorageKey(state.gameId),
+            JSON.stringify({ token: data.token, mode: 'solo', color: 'both' }),
+          );
+          showMessage('Solo game started. You control both sides.', 'success');
+          await loadGame();
+        } catch (err) {
+          showMessage('Error starting solo game: ' + err.message, 'error');
+        }
+      }
+
+      async function newGame() {
+        localStorage.removeItem(LOCAL_GAME_KEY);
+        if (state.gameId) {
+          localStorage.removeItem(getTokenStorageKey(state.gameId));
+        }
+        state.gameId = null;
+        state.token = null;
+        state.selectedSquare = null;
+        state.validMoves = [];
+        state.currentFen = null;
+        state.status = 'waiting';
+        await initGame();
+      }
+
+      async function initGame() {
+        if (!state.gameId) {
+          await ensureGameExists();
+        }
+        const storedToken = localStorage.getItem(getTokenStorageKey(state.gameId));
+        if (storedToken) {
+          try {
+            const session = JSON.parse(storedToken);
+            state.token = session.token || null;
+          } catch {
+            state.token = null;
+          }
+        }
+        document.getElementById(
+          'gameMeta',
+        ).textContent = `Game ID: ${state.gameId || 'creating…'}`;
+        await loadGame();
+
+        if (!state.pollTimer) {
+          state.pollTimer = setInterval(loadGame, 2500);
+        }
+      }
+
+      document.getElementById('startSoloButton').addEventListener('click', startSolo);
+      document.getElementById('newGameButton').addEventListener('click', newGame);
+
+      initGame();
+    </script>
+  </body>
+</html>
