@@ -430,9 +430,19 @@
                 text.setAttribute('y', y + squareSize * 0.7);
                 text.setAttribute('font-size', '44');
                 text.setAttribute('text-anchor', 'middle');
-                text.setAttribute('fill', piece.color === 'w' ? '#ffffff' : '#000000');
-                text.setAttribute('stroke', piece.color === 'w' ? '#000000' : '#ffffff');
-                text.setAttribute('stroke-width', '0.8');
+                
+                // White pieces: white fill with black outline
+                // Black pieces: black fill with white outline
+                if (piece.color === 'w') {
+                  text.setAttribute('fill', '#ffffff');
+                  text.setAttribute('stroke', '#1a1a1a');
+                  text.setAttribute('stroke-width', '1.5');
+                } else {
+                  text.setAttribute('fill', '#1a1a1a');
+                  text.setAttribute('stroke', '#ffffff');
+                  text.setAttribute('stroke-width', '1.2');
+                }
+                
                 text.textContent = glyph;
                 text.style.pointerEvents = 'none';
                 svg.appendChild(text);
